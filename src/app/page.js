@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect } from 'react';
+import QRModal from './QRModal';
 import { useRouter } from 'next/navigation';
 import styles from './login/login.module.css';
 
@@ -7,9 +8,16 @@ export default function ListaSpesa() {
   const [items, setItems] = useState([]);
   const [newItem, setNewItem] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showQR, setShowQR] = useState(false);
+  const [isStandalone, setIsStandalone] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
+    // Controlla se siamo in modalità standalone (PWA installata)
+    if (typeof window !== 'undefined') {
+      const standalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+      setIsStandalone(!!standalone);
+    }
     const token = typeof window !== 'undefined' ? localStorage.getItem('user_token') : null;
     if (!token) {
       router.push('/login');
@@ -20,6 +28,10 @@ export default function ListaSpesa() {
       .then(res => res.json())
       .then(data => {
         setItems(data.prodotti || []);
+      })
+      .catch(err => {
+        console.error('Errore caricamento prodotti:', err);
+        setItems([]);
       });
   }, [router]);
 
@@ -28,42 +40,65 @@ export default function ListaSpesa() {
     if (!newItem.trim()) return;
     setLoading(true);
     const token = typeof window !== 'undefined' ? localStorage.getItem('user_token') : null;
-    const res = await fetch('/api/prodotti', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ uid: token, nome: newItem.trim() })
-    });
-    const data = await res.json();
-    setLoading(false);
-    if (data.success) {
-      // Ricarica prodotti
-      fetch(`/api/prodotti?uid=${token}`)
-        .then(res => res.json())
-        .then(data => {
-          setItems(data.prodotti || []);
-        });
-      setNewItem('');
+    try {
+      const res = await fetch('/api/prodotti', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ uid: token, nome: newItem.trim() })
+      });
+      const data = await res.json();
+      setLoading(false);
+      if (data.success) {
+        // Ricarica prodotti
+        fetch(`/api/prodotti?uid=${token}`)
+          .then(res => res.json())
+          .then(data => {
+            setItems(data.prodotti || []);
+          })
+          .catch(err => {
+            console.error('Errore ricaricamento prodotti:', err);
+            setItems([]);
+          });
+        setNewItem('');
+      }
+    } catch (err) {
+      setLoading(false);
+      console.error('Errore aggiunta prodotto:', err);
     }
   };
 
   return (
     <div style={{ minHeight: '100vh', background: '#f5f5f5', display: 'flex', flexDirection: 'column' }}>
       <nav style={{
-        width: '100%',
+        width: '100vw',
         background: '#fff',
         boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
         padding: '0.5rem 1rem',
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'flex-start',
-        position: 'sticky',
+        justifyContent: 'space-between',
+        position: 'fixed',
         top: 0,
-        zIndex: 10
+        left: 0,
+        zIndex: 1000,
+        height: '64px',
+        minHeight: '64px'
       }}>
-        <img src="/icon.svg" alt="Logo Lista Spesa" style={{ width: 40, height: 40, marginRight: 12 }} />
-        <span style={{ fontWeight: 600, fontSize: '1.2rem', color: '#0070f3' }}>Lista Spesa</span>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <img src="/icon.svg" alt="Logo Lista Spesa" style={{ width: 40, height: 40, marginRight: 12 }} />
+          <span style={{ fontWeight: 600, fontSize: '1.2rem', color: '#0070f3' }}>Lista Spesa</span>
+        </div>
+        {!isStandalone && (
+          <button
+            onClick={() => setShowQR(true)}
+            style={{ padding: '8px 16px', background: '#0070f3', color: '#fff', border: 'none', borderRadius: 4, fontWeight: 600, marginRight: 24 }}
+          >
+            Scarica App
+          </button>
+        )}
       </nav>
-      <main style={{ flex: 1, width: '100vw', minHeight: '90vh', display: 'flex', justifyContent: 'center', alignItems: 'stretch', padding: 0 }}>
+      <QRModal show={showQR} onClose={() => setShowQR(false)} qrUrl="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://listadellaspesa-sigma.vercel.app/" />
+      <main style={{ flex: 1, width: '100vw', minHeight: '90vh', display: 'flex', justifyContent: 'center', alignItems: 'stretch', padding: 0, marginTop: '64px' }}>
         <section style={{ width: '100vw', minHeight: '90vh', margin: 0, display: 'flex', justifyContent: 'center', alignItems: 'stretch' }}>
           <div className={styles.form} style={{ gap: 24, width: '100vw', maxWidth: '100vw', minHeight: '90vh', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start' }}>
             <h2>La tua Lista della Spesa</h2>
