@@ -91,33 +91,31 @@ export default function ListaSpesa() {
           <FontAwesomeIcon icon={icons.table} style={{ width: 40, height: 40, marginRight: 12, color: '#0070f3' }} />
           <span style={{ fontWeight: 600, fontSize: '1.2rem', color: '#0070f3' }}>Lista Spesa</span>
         </div>
-        {!isStandalone && (
-          <div style={{ display: 'flex', alignItems: 'center' }}>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <span
+            onClick={() => {
+              localStorage.removeItem('user_token');
+              window.location.reload();
+            }}
+            style={iconWrapperStyle}
+            title="Logout"
+            onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.15)'}
+            onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+          >
+            <FontAwesomeIcon icon={icons.logout} style={iconStyle} />
+          </span>
+          {!isStandalone && (
             <span
-              onClick={() => {
-                localStorage.removeItem('user_token');
-                window.location.reload();
-              }}
+              onClick={() => setShowQR(true)}
               style={iconWrapperStyle}
-              title="Logout"
+              title="Scarica App"
               onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.15)'}
               onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
             >
-              <FontAwesomeIcon icon={icons.logout} style={iconStyle} />
+              <FontAwesomeIcon icon={icons.download} style={iconStyle} />
             </span>
-            {!isStandalone && (
-              <span
-                onClick={() => setShowQR(true)}
-                style={iconWrapperStyle}
-                title="Scarica App"
-                onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.15)'}
-                onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
-              >
-                <FontAwesomeIcon icon={icons.download} style={iconStyle} />
-              </span>
-            )}
-          </div>
-        )}
+          )}
+        </div>
       </nav>
       <QRModal show={showQR} onClose={() => setShowQR(false)} qrUrl="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://listadellaspesa-sigma.vercel.app/" />
       <main style={{ flex: 1, width: '100vw', minHeight: '90vh', display: 'flex', justifyContent: 'center', alignItems: 'stretch', padding: 0, marginTop: '64px', overflowY: 'auto' }}>
