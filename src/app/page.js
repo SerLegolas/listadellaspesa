@@ -105,15 +105,17 @@ export default function ListaSpesa() {
             >
               <FontAwesomeIcon icon={icons.logout} style={iconStyle} />
             </span>
-            <span
-              onClick={() => setShowQR(true)}
-              style={iconWrapperStyle}
-              title="Scarica App"
-              onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.15)'}
-              onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
-            >
-              <FontAwesomeIcon icon={icons.download} style={iconStyle} />
-            </span>
+            {!isStandalone && (
+              <span
+                onClick={() => setShowQR(true)}
+                style={iconWrapperStyle}
+                title="Scarica App"
+                onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.15)'}
+                onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+              >
+                <FontAwesomeIcon icon={icons.download} style={iconStyle} />
+              </span>
+            )}
           </div>
         )}
       </nav>
