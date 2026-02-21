@@ -1,3 +1,19 @@
+html, body {
+  overflow-y: hidden;
+  height: 100vh;
+}
+.finespesaBtn {
+  align-self: center;
+  margin-top: 24px;
+  min-width: 120px;
+  background: #2ecc40 !important;
+  color: #fff !important;
+  border: none;
+  transition: background 0.2s;
+}
+.finespesaBtn:hover {
+  background: #27ae38 !important;
+}
 .spinner {
   display: inline-block;
   width: 24px;

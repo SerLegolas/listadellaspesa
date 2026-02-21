@@ -56,19 +56,19 @@ export default function Register() {
         <h2>Crea il tuo account</h2>
         <input
           type="text"
-          placeholder="Nome"
+          placeholder="🪪 Nome"
           value={name}
           onChange={e => setName(e.target.value)}
         />
         <input
           type="text"
-          placeholder="Username"
+          placeholder="👤 Username"
           value={username}
           onChange={e => setUsername(e.target.value)}
         />
         <input
           type="password"
-          placeholder="Password"
+          placeholder="🔒 Password"
           value={password}
           onChange={e => setPassword(e.target.value)}
         />
