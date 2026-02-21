@@ -1,5 +1,8 @@
 "use client";
 import React, { useState, useEffect } from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { icons } from './icons';
+import { iconWrapperStyle, iconStyle } from './IconStyle';
 import QRModal from './QRModal';
 import { useRouter } from 'next/navigation';
 import styles from './login/login.module.css';
@@ -68,7 +71,7 @@ export default function ListaSpesa() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', background: '#f5f5f5', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ minHeight: '100vh', background: '#f5f5f5', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       <nav style={{
         width: '100vw',
         background: '#fff',
@@ -84,21 +87,38 @@ export default function ListaSpesa() {
         height: '64px',
         minHeight: '64px'
       }}>
-        <div style={{ display: 'flex', alignItems: 'center' }}>
-          <img src="/icon.svg" alt="Logo Lista Spesa" style={{ width: 40, height: 40, marginRight: 12 }} />
+        <div style={{ display: 'flex', alignItems: 'center', flex: 1 }}>
+          <FontAwesomeIcon icon={icons.table} style={{ width: 40, height: 40, marginRight: 12, color: '#0070f3' }} />
           <span style={{ fontWeight: 600, fontSize: '1.2rem', color: '#0070f3' }}>Lista Spesa</span>
         </div>
         {!isStandalone && (
-          <button
-            onClick={() => setShowQR(true)}
-            style={{ padding: '8px 16px', background: '#0070f3', color: '#fff', border: 'none', borderRadius: 4, fontWeight: 600, marginRight: 24 }}
-          >
-            Scarica App
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <span
+              onClick={() => {
+                localStorage.removeItem('user_token');
+                window.location.reload();
+              }}
+              style={iconWrapperStyle}
+              title="Logout"
+              onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.15)'}
+              onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+            >
+              <FontAwesomeIcon icon={icons.logout} style={iconStyle} />
+            </span>
+            <span
+              onClick={() => setShowQR(true)}
+              style={iconWrapperStyle}
+              title="Scarica App"
+              onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.15)'}
+              onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+            >
+              <FontAwesomeIcon icon={icons.download} style={iconStyle} />
+            </span>
+          </div>
         )}
       </nav>
       <QRModal show={showQR} onClose={() => setShowQR(false)} qrUrl="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://listadellaspesa-sigma.vercel.app/" />
-      <main style={{ flex: 1, width: '100vw', minHeight: '90vh', display: 'flex', justifyContent: 'center', alignItems: 'stretch', padding: 0, marginTop: '64px' }}>
+      <main style={{ flex: 1, width: '100vw', minHeight: '90vh', display: 'flex', justifyContent: 'center', alignItems: 'stretch', padding: 0, marginTop: '64px', overflowY: 'auto' }}>
         <section style={{ width: '100vw', minHeight: '90vh', margin: 0, display: 'flex', justifyContent: 'center', alignItems: 'stretch' }}>
           <div className={styles.form} style={{ gap: 24, width: '100vw', maxWidth: '100vw', minHeight: '90vh', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start' }}>
             <h2>La tua Lista della Spesa</h2>
