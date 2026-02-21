@@ -1,0 +1,5 @@
+/* Impostazione globale del font Outfit */
+body {
+  font-family: 'Outfit', Arial, sans-serif;
+  font-weight: 200;
+}
