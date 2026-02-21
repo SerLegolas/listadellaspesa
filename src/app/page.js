@@ -70,6 +70,12 @@ export default function ListaSpesa() {
     }
   };
 
+  // Import degli stili PWA
+  const { iconWrapperStyle, iconStyle } = require('./IconStyle');
+  const { iconWrapperStylePWA, iconStylePWA } = require('./IconStylePWA');
+  const wrapperStyle = isStandalone ? iconWrapperStylePWA : iconWrapperStyle;
+  const faStyle = isStandalone ? iconStylePWA : iconStyle;
+
   return (
     <div style={{ minHeight: '100vh', background: '#f5f5f5', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       <nav style={{
@@ -97,22 +103,22 @@ export default function ListaSpesa() {
               localStorage.removeItem('user_token');
               window.location.reload();
             }}
-            style={iconWrapperStyle}
+            style={wrapperStyle}
             title="Logout"
             onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.15)'}
             onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
           >
-            <FontAwesomeIcon icon={icons.logout} style={iconStyle} />
+            <FontAwesomeIcon icon={icons.logout} style={faStyle} />
           </span>
           {!isStandalone && (
             <span
               onClick={() => setShowQR(true)}
-              style={iconWrapperStyle}
+              style={wrapperStyle}
               title="Scarica App"
               onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.15)'}
               onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
             >
-              <FontAwesomeIcon icon={icons.download} style={iconStyle} />
+              <FontAwesomeIcon icon={icons.download} style={faStyle} />
             </span>
           )}
         </div>
