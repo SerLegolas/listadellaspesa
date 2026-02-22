@@ -1,3 +1,35 @@
+@media (max-width: 480px) {
+  .corpo {
+    padding: 8px !important;
+  }
+  .form-container {
+    flex-direction: column;
+    gap: 8px;
+    align-items: stretch;
+  }
+  .form-container input,
+  .form-container button {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    margin: 0;
+    padding-left: 0;
+    padding-right: 0;
+  }
+  .tabella_table {
+    width: 100%;
+    table-layout: fixed;
+  }
+  .tabella_td {
+    padding: 6px;
+    font-size: 14px;
+    word-break: break-word;
+  }
+  .tabella {
+    max-height: 180px;
+    font-size: 14px;
+  }
+}
 @media (max-width: 600px) {
   .form-container {
     flex-direction: column;
