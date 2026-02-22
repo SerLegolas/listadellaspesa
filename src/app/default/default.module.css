@@ -1,4 +1,35 @@
 @media (max-width: 600px) {
+  .form-container {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+  .form-container input {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+  .form-container button {
+    width: 100%;
+    box-sizing: border-box;
+  }
+}
+@media (max-width: 600px) {
+  .tabella_table {
+    width: 100%;
+    table-layout: fixed;
+  }
+  .tabella_td {
+    padding: 6px;
+    font-size: 14px;
+    word-break: break-word;
+  }
+  .tabella {
+    max-height: 180px;
+    font-size: 14px;
+  }
+}
+@media (max-width: 600px) {
   .form-container input {
     max-width: 135px;
   }
