@@ -1,3 +1,23 @@
+@media (max-width: 600px) {
+  .corpo {
+    padding: 8px;
+  }
+  .form-container {
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+  .form-container input {
+    padding: 8px;
+    font-size: 15px;
+  }
+  .form-container button {
+    padding: 8px 12px;
+    font-size: 15px;
+  }
+  .tabella {
+    max-height: 250px;
+  }
+}
 /* SPINNER */
 .spinner {
   display: inline-block;

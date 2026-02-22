@@ -51,7 +51,9 @@ export default function DefaultPage() {
             <span className={styles.logo}>Lista Spesa</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
-            <FontAwesomeIcon icon={icons.download} title="Download" style={{ cursor: 'pointer' }} onClick={() => setShowQR(true)} />
+            {typeof window !== 'undefined' && !window.matchMedia('(display-mode: standalone)').matches && (
+              <FontAwesomeIcon icon={icons.download} title="Download" style={{ cursor: 'pointer' }} onClick={() => setShowQR(true)} />
+            )}
             <FontAwesomeIcon
               icon={icons.logout}
               title="Logout"
