@@ -45,6 +45,7 @@ html, body {
   flex-direction: column;
   gap: 16px;
   width: 320px;
+  height: 400px;
 }
 
 .form h2 {

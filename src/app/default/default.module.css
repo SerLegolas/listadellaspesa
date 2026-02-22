@@ -1,0 +1,179 @@
+/* SPINNER */
+.spinner {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  border: 3px solid #ccc;
+  border-top: 3px solid #0070f3;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.main * {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.main {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* NAVBAR */
+.navbar {
+  width: 100%;
+  background-color: orange;
+  color: white;
+  padding: 10px;
+  margin: 0;
+  border: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  transform: none;
+  box-sizing: border-box;
+  z-index: 10;
+}
+
+.logo {
+  font-size: 20px;
+  font-weight: bold;
+}
+
+/* CORPO */
+.corpo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  margin-top: 52px;
+}
+
+/* INPUT + BUTTON */
+.form-container {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.form-container input {
+  flex: 1;
+  padding: 10px;
+  font-size: 16px;
+  border-radius: 4px;
+}
+
+.form-container button {
+  padding: 10px 20px;
+  background-color: #007BFF;
+  color: white;
+  border: none;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.form-container button:hover {
+  background-color: #0056b3;
+}
+
+/* CONTENITORE TABELLA */
+.tabella {
+  flex: 1;
+  overflow-y: auto;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  max-height: 400px;
+  background: #fff;
+}
+
+/* TABELLA */
+.tabella_table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.tabella_thead {
+  background-color: #f4f4f4;
+  position: sticky;
+  top: 0;
+}
+
+.tabella_th {
+  padding: 10px;
+  border: none;
+  border-bottom: 1px solid #ddd;
+  text-align: left;
+}
+
+.tabella_td {
+  padding: 10px;
+  border: none;
+  border-bottom: 1px solid #ddd;
+  text-align: left;
+}
+
+/* MAIN a pagina intera */
+.main {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* NAVBAR */
+/* rimosso duplicato navbar */
+
+.logo {
+  font-size: 20px;
+  font-weight: bold;
+}
+
+/* CORPO */
+.corpo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+}
+
+/* INPUT + BUTTON */
+.form-container {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.form-container input {
+  flex: 1;
+  padding: 10px;
+  font-size: 16px;
+}
+
+.form-container button {
+  padding: 10px 20px;
+  background-color: #007BFF;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+.form-container button:hover {
+  background-color: #0056b3;
+}
+
+/* CONTENITORE TABELLA */
+.tabella {
+  flex: 1;
+  overflow-y: auto;
+  border: 1px solid #ccc;
+}
+
+
+

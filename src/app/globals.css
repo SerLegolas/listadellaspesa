@@ -1,3 +1,7 @@
+html, body {
+  overflow: hidden;
+  height: 100vh;
+}
 /* Impostazione globale del font Outfit */
 body {
   font-family: 'Outfit', Arial, sans-serif;

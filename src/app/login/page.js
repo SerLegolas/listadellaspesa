@@ -43,7 +43,7 @@ export default function Login() {
         if (typeof window !== 'undefined') {
           localStorage.setItem('user_token', data.user.uid);
         }
-        router.push('/');
+          router.push('/default'); // Reindirizza alla pagina default
       } else {
         setError(data.error || 'Credenziali non valide');
       }

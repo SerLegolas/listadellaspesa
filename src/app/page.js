@@ -46,7 +46,7 @@ export default function ListaSpesa() {
       router.push('/login');
       return;
     }
-    // Carica prodotti
+    // Carica prodotti iniziale
     fetch(`/api/prodotti?uid=${token}`)
       .then(res => res.json())
       .then(data => {
@@ -56,6 +56,19 @@ export default function ListaSpesa() {
         console.error('Errore caricamento prodotti:', err);
         setItems([]);
       });
+
+    // Polling solo lista ogni 10 secondi
+    const interval = setInterval(() => {
+      fetch(`/api/prodotti?uid=${token}`)
+        .then(res => res.json())
+        .then(data => {
+          setItems(data.prodotti || []);
+        })
+        .catch(err => {
+          console.error('Errore polling prodotti:', err);
+        });
+    }, 10000);
+    return () => clearInterval(interval);
   }, [router]);
 
   const handleAdd = async (e) => {
@@ -93,7 +106,7 @@ export default function ListaSpesa() {
   const faStyle = isStandalone ? iconStylePWA : iconStyle;
 
   return (
-    <div style={{ minHeight: '100vh', background: '#f5f5f5', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+    <div style={{ height: '100vh', background: '#f5f5f5', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       <nav style={{
         width: '100vw',
         background: '#fff',
@@ -140,9 +153,20 @@ export default function ListaSpesa() {
         </div>
       </nav>
       <QRModal show={showQR} onClose={() => setShowQR(false)} qrUrl="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://listadellaspesa-sigma.vercel.app/" />
-      <main style={{ flex: 1, width: '100vw', minHeight: '90vh', display: 'flex', justifyContent: 'center', alignItems: 'stretch', padding: 0, marginTop: '64px', overflowY: 'auto' }}>
-        <section style={{ width: '100vw', minHeight: '90vh', margin: 0, display: 'flex', justifyContent: 'center', alignItems: 'stretch' }}>
-          <div className={styles.form} style={{ gap: 24, width: '100vw', maxWidth: '100vw', minHeight: '90vh', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start' }}>
+      <main style={{
+        flex: 1,
+        width: '100vw',
+        height: '100vh',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'stretch',
+        padding: 0,
+        marginTop: '64px',
+        overflowX: 'hidden',
+        boxSizing: 'border-box'
+      }}>
+        <section style={{ width: '100vw', height: '100%', margin: 0, display: 'flex', justifyContent: 'center', alignItems: 'stretch' }}>
+          <div className={styles.form} style={{ gap: 24, width: '100%', maxWidth: '100vw', height: '200px', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', paddingLeft: '3%', paddingRight: '3%' }}>
             <h2>La tua Lista della Spesa</h2>
             <form onSubmit={handleAdd} style={{ display: 'flex', gap: 8 }}>
               <input
@@ -154,20 +178,55 @@ export default function ListaSpesa() {
               />
               <button type="submit">Aggiungi</button>
             </form>
-            <ul style={{ margin: 0, padding: 0, listStyle: 'none', width: '100%' }}>
-              {items.length === 0 && <li style={{ color: '#888', textAlign: 'center' }}>Nessun prodotto</li>}
-              {items.map((item) => (
-                  <li key={item.id} style={{ padding: '8px 0', borderBottom: '1px solid #eee', width: '100%' }}>
-                    <input
-                      type="checkbox"
-                      checked={item.checked === 1}
-                      onChange={e => handleCheck(item.id, e.target.checked)}
-                      style={{ marginRight: 8 }}
-                    />
-                    {item.nome}
-                  </li>
-                ))}
-            </ul>
+            <div style={{
+              background: '#fff',
+              borderRadius: 8,
+              boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+              padding: 10,
+              width: '100%',
+              margin: '0 auto',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 16,
+              minHeight: 500,
+              height: 'calc(100vh - 64px)',
+              overflowY: 'auto'
+            }}>
+              <ul style={{ margin: 0, padding: 0, listStyle: 'none', width: '100%' }}>
+                {items.length === 0 && <li style={{ color: '#888', textAlign: 'center' }}>Nessun prodotto</li>}
+                {items.map((item) => (
+                    <li key={item.id} style={{ padding: '8px 0', borderBottom: '1px solid #eee', width: '100%', display: 'flex', alignItems: 'center' }}>
+                      <input
+                        type="checkbox"
+                        checked={item.checked === 1}
+                        onChange={e => handleCheck(item.id, e.target.checked)}
+                        style={{ marginRight: 8 }}
+                      />
+                      <span style={{ flex: 1 }}>{item.nome}</span>
+                      <span
+                        style={{ cursor: 'pointer', marginLeft: 12, color: '#d32f2f', display: 'flex', alignItems: 'center' }}
+                        title="Elimina prodotto"
+                        onClick={async () => {
+                          const token = typeof window !== 'undefined' ? localStorage.getItem('user_token') : null;
+                          await fetch('/api/prodotti', {
+                            method: 'DELETE',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ uid: token, id: item.id })
+                          });
+                          // Aggiorna lista dopo eliminazione
+                          fetch(`/api/prodotti?uid=${token}`)
+                            .then(res => res.json())
+                            .then(data => {
+                              setItems(data.prodotti || []);
+                            });
+                        }}
+                      >
+                        <FontAwesomeIcon icon={icons.trash} style={{ width: 11, height: 11 }} />
+                      </span>
+                    </li>
+                  ))}
+              </ul>
+            </div>
             {items.some(item => item.checked === 1) && (
               <button
                 style={{
