@@ -34,17 +34,26 @@ self.addEventListener('activate', event => {
   clients.claim();
 });
 
+// Forza reload dopo ogni fetch se la risposta è diversa dalla cache
 self.addEventListener('fetch', event => {
   event.respondWith(
-    fetch(event.request)
-      .then(response => {
-        // Aggiorna cache con la nuova versione
-        const responseClone = response.clone();
-        caches.open(CACHE_NAME).then(cache => {
-          cache.put(event.request, responseClone);
-        });
-        return response;
-      })
-      .catch(() => caches.match(event.request))
+    caches.open(CACHE_NAME).then(async cache => {
+      const cachedResponse = await cache.match(event.request);
+      try {
+        const networkResponse = await fetch(event.request);
+        if (!cachedResponse || !networkResponse || cachedResponse.status !== networkResponse.status || cachedResponse.headers.get('ETag') !== networkResponse.headers.get('ETag')) {
+          cache.put(event.request, networkResponse.clone());
+          // Forza reload se la risposta è diversa
+          if (self.clients) {
+            self.clients.matchAll().then(clients => {
+              clients.forEach(client => client.navigate(client.url));
+            });
+          }
+        }
+        return networkResponse;
+      } catch (e) {
+        return cachedResponse || Response.error();
+      }
+    })
   );
 });
