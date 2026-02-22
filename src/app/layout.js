@@ -15,11 +15,21 @@ export default function RootLayout({ children }) {
         <link rel="icon" type="image/png" href="/favicon.png" />
         <script
           dangerouslySetInnerHTML={{
-            __html: `if ('serviceWorker' in navigator) {
-              window.addEventListener('load', function() {
-                navigator.serviceWorker.register('/service-worker.js');
-              });
-            }`
+            __html: `
+              if ('serviceWorker' in navigator) {
+                window.addEventListener('load', function() {
+                  navigator.serviceWorker.register('/service-worker.js');
+                });
+              }
+              // Reload for PWA standalone mode
+              if (window.matchMedia('(display-mode: standalone)').matches) {
+                window.addEventListener('visibilitychange', function() {
+                  if (document.visibilityState === 'visible') {
+                    window.location.reload();
+                  }
+                });
+              }
+            `
           }}
         />
       </head>
