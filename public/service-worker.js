@@ -40,17 +40,22 @@ self.addEventListener('fetch', event => {
     caches.open(CACHE_NAME).then(async cache => {
       const cachedResponse = await cache.match(event.request);
       try {
-        const networkResponse = await fetch(event.request);
-        if (!cachedResponse || !networkResponse || cachedResponse.status !== networkResponse.status || cachedResponse.headers.get('ETag') !== networkResponse.headers.get('ETag')) {
-          cache.put(event.request, networkResponse.clone());
-          // Forza reload se la risposta è diversa
-          if (self.clients) {
-            self.clients.matchAll().then(clients => {
-              clients.forEach(client => client.navigate(client.url));
-            });
-          }
-        }
-        return networkResponse;
+      fetch(event.request)
+        .then((networkResponse) => {
+          // Aggiorna la cache con la risposta di rete
+          caches.open(CACHE_NAME).then((cache) => {
+            if (networkResponse && networkResponse.status === 200) {
+              cache.put(event.request, networkResponse.clone());
+            }
+          });
+          return networkResponse;
+        })
+        .catch(() => {
+          // In caso di errore di rete, usa la cache
+          return caches.open(CACHE_NAME).then((cache) => {
+            return cache.match(event.request);
+          });
+        });
       } catch (e) {
         return cachedResponse || Response.error();
       }
