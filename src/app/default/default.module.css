@@ -1,20 +1,18 @@
 @media (max-width: 600px) {
   .form-container {
     flex-direction: column;
-    align-items: stretch;
     gap: 8px;
+    align-items: stretch;
   }
-  .form-container input {
+  .form-container input,
+  .form-container button {
     width: 100%;
     max-width: 100%;
     box-sizing: border-box;
+    margin: 0;
+    padding-left: 0;
+    padding-right: 0;
   }
-  .form-container button {
-    width: 100%;
-    box-sizing: border-box;
-  }
-}
-@media (max-width: 600px) {
   .tabella_table {
     width: 100%;
     table-layout: fixed;
@@ -28,30 +26,8 @@
     max-height: 180px;
     font-size: 14px;
   }
-}
-@media (max-width: 600px) {
-  .form-container input {
-    max-width: 135px;
-  }
-}
-@media (max-width: 600px) {
   .corpo {
     padding: 8px;
-  }
-  .form-container {
-    gap: 6px;
-    margin-bottom: 12px;
-  }
-  .form-container input {
-    padding: 8px;
-    font-size: 15px;
-  }
-  .form-container button {
-    padding: 8px 12px;
-    font-size: 15px;
-  }
-  .tabella {
-    max-height: 250px;
   }
 }
 /* SPINNER */
