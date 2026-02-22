@@ -40,24 +40,29 @@ self.addEventListener('fetch', event => {
     caches.open(CACHE_NAME).then(async cache => {
       const cachedResponse = await cache.match(event.request);
       try {
-      fetch(event.request)
-        .then((networkResponse) => {
-          // Aggiorna la cache con la risposta di rete
-          caches.open(CACHE_NAME).then((cache) => {
-            if (networkResponse && networkResponse.status === 200) {
-              cache.put(event.request, networkResponse.clone());
-            }
-          });
+        const networkResponse = await fetch(event.request);
+        if (networkResponse && networkResponse.status === 200) {
+          cache.put(event.request, networkResponse.clone());
           return networkResponse;
-        })
-        .catch(() => {
-          // In caso di errore di rete, usa la cache
-          return caches.open(CACHE_NAME).then((cache) => {
-            return cache.match(event.request);
+        } else if (cachedResponse) {
+          return cachedResponse;
+        } else {
+          return new Response('Risorsa non disponibile', {
+            status: 503,
+            statusText: 'Service Unavailable',
+            headers: { 'Content-Type': 'text/plain' }
           });
-        });
+        }
       } catch (e) {
-        return cachedResponse || Response.error();
+        if (cachedResponse) {
+          return cachedResponse;
+        } else {
+          return new Response('Offline e nessuna cache', {
+            status: 503,
+            statusText: 'Service Unavailable',
+            headers: { 'Content-Type': 'text/plain' }
+          });
+        }
       }
     })
   );
