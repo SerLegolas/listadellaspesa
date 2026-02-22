@@ -1,4 +1,9 @@
 @media (max-width: 600px) {
+  .form-container input {
+    max-width: 140px;
+  }
+}
+@media (max-width: 600px) {
   .corpo {
     padding: 8px;
   }
