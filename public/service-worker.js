@@ -34,36 +34,37 @@ self.addEventListener('activate', event => {
   clients.claim();
 });
 
-// Forza reload dopo ogni fetch se la risposta è diversa dalla cache
+// Rete-primario: forziamo il reload dalla rete e aggiorniamo la cache.
+// in particolare le richieste di navigazione (html) devono sempre passare
+// dalla rete perché altrimenti il browser potrebbe rispondere con un 304 e
+// il service worker restituire il vecchio contenuto.
 self.addEventListener('fetch', event => {
-  event.respondWith(
-    caches.open(CACHE_NAME).then(async cache => {
-      const cachedResponse = await cache.match(event.request);
-      try {
-        const networkResponse = await fetch(event.request);
-        if (networkResponse && networkResponse.status === 200) {
-          cache.put(event.request, networkResponse.clone());
-          return networkResponse;
-        } else if (cachedResponse) {
-          return cachedResponse;
-        } else {
-          return new Response('Risorsa non disponibile', {
-            status: 503,
-            statusText: 'Service Unavailable',
-            headers: { 'Content-Type': 'text/plain' }
-          });
-        }
-      } catch (e) {
-        if (cachedResponse) {
-          return cachedResponse;
-        } else {
-          return new Response('Offline e nessuna cache', {
-            status: 503,
-            statusText: 'Service Unavailable',
-            headers: { 'Content-Type': 'text/plain' }
-          });
-        }
+  event.respondWith((async () => {
+    const cache = await caches.open(CACHE_NAME);
+    const cachedResponse = await cache.match(event.request);
+
+    try {
+      // usa cache: 'reload' per aggirare conditional GET e ricevere sempre
+      // una versione aggiornata dal server
+      const networkResponse = await fetch(event.request, { cache: 'reload' });
+
+      // salva solo risposte davvero valide (200 OK)
+      if (networkResponse && networkResponse.status === 200) {
+        cache.put(event.request, networkResponse.clone());
       }
-    })
-  );
+      // restituisci la risposta di rete in ogni caso (anche 304 o 500),
+      // il browser la gestirà correttamente
+      return networkResponse;
+    } catch (e) {
+      // rete non disponibile: prova a tornare alla cache
+      if (cachedResponse) {
+        return cachedResponse;
+      }
+      return new Response('Offline e nessuna cache', {
+        status: 503,
+        statusText: 'Service Unavailable',
+        headers: { 'Content-Type': 'text/plain' }
+      });
+    }
+  })());
 });
