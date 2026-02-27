@@ -1,4 +1,6 @@
-const CACHE_NAME = 'listaspesa-v1';
+// Increment this version whenever you deploy a new release so that
+// the old HTML/css/js files are purged and clients fetch the fresh copy.
+const CACHE_NAME = 'listaspesa-v2';
 const urlsToCache = [
   '/',
   '/manifest.json',
