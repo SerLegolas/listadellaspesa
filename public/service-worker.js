@@ -1,6 +1,7 @@
 // Increment this version whenever you deploy a new release so that
 // the old HTML/css/js files are purged and clients fetch the fresh copy.
-const CACHE_NAME = 'listaspesa-v2';
+// versione cache incrementata per forzare aggiornamento su deploy
+const CACHE_NAME = 'listaspesa-v3';
 const urlsToCache = [
   '/',
   '/manifest.json',
@@ -45,20 +46,32 @@ self.addEventListener('fetch', event => {
     const cache = await caches.open(CACHE_NAME);
     const cachedResponse = await cache.match(event.request);
 
-    try {
-      // usa cache: 'reload' per aggirare conditional GET e ricevere sempre
-      // una versione aggiornata dal server
-      const networkResponse = await fetch(event.request, { cache: 'reload' });
+    // navigazioni (richieste HTML) devono sempre tornare dalla rete, ma
+    // se riceviamo un 304 lo interpretiamo come "nessun contenuto nuovo" e
+    // restituiamo la copia cache.
+    const isNavigation = event.request.mode === 'navigate';
 
-      // salva solo risposte davvero valide (200 OK)
+    try {
+      const networkOptions = isNavigation ? { cache: 'no-store' } : { cache: 'reload' };
+      const networkResponse = await fetch(event.request, networkOptions);
+
       if (networkResponse && networkResponse.status === 200) {
+        // aggiorna cache SIA per html sia per altri asset
         cache.put(event.request, networkResponse.clone());
+        return networkResponse;
       }
-      // restituisci la risposta di rete in ogni caso (anche 304 o 500),
-      // il browser la gestirà correttamente
+
+      // gestione 304 o altre risposte non-200
+      if (networkResponse && networkResponse.status === 304 && cachedResponse) {
+        // già avevamo una copia valida, restituiamola
+        return cachedResponse;
+      }
+
+      // per altre risposte (es. 500) ritorna comunque la networkResponse;
+      // se è una fetch di navigazione può contenere un body vuoto ma il
+      // browser mostrerà la pagina corretta dalla cache
       return networkResponse;
     } catch (e) {
-      // rete non disponibile: prova a tornare alla cache
       if (cachedResponse) {
         return cachedResponse;
       }
