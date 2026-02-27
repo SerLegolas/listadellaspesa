@@ -80,7 +80,11 @@ self.addEventListener('fetch', event => {
     try {
       const networkResponse = await fetch(event.request, { cache: 'reload' });
       if (networkResponse && networkResponse.status === 200) {
-        cache.put(event.request, networkResponse.clone());
+        // solo cache richieste http/https per evitare errori con schemi come
+        // chrome-extension:// o dati interni
+        if (/^https?:/.test(event.request.url)) {
+          cache.put(event.request, networkResponse.clone());
+        }
       }
       return networkResponse;
     } catch (e) {
