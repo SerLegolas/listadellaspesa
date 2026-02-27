@@ -1,5 +1,74 @@
 "use client";
 import React, { useState, useEffect } from 'react';
+
+// helper per gestire cookie
+function setCookie(name, value, days) {
+  let expires = "";
+  if (days) {
+    const date = new Date();
+    date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
+    expires = "; expires=" + date.toUTCString();
+  }
+  document.cookie = name + "=" + (value || "") + expires + "; path=/";
+}
+
+function getCookie(name) {
+  const nameEQ = name + "=";
+  const ca = document.cookie.split(';');
+  for (let i = 0; i < ca.length; i++) {
+    let c = ca[i];
+    while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+    if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+  }
+  return null;
+}
+
+// semplice cifratura con Web Crypto usando chiave derivata fissa
+const SECRET_PASSPHRASE = "ReplaceThisWithYourOwnSecret";
+const SALT = "fixed-salt";
+
+async function deriveKey() {
+  const enc = new TextEncoder();
+  const baseKey = await crypto.subtle.importKey(
+    'raw',
+    enc.encode(SECRET_PASSPHRASE),
+    'PBKDF2',
+    false,
+    ['deriveKey']
+  );
+  return crypto.subtle.deriveKey(
+    { name: 'PBKDF2', salt: enc.encode(SALT), iterations: 100000, hash: 'SHA-256' },
+    baseKey,
+    { name: 'AES-GCM', length: 256 },
+    false,
+    ['encrypt', 'decrypt']
+  );
+}
+async function encryptText(text) {
+  const key = await deriveKey();
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const enc = new TextEncoder();
+  const cipher = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, enc.encode(text));
+  const buffer = new Uint8Array(iv.byteLength + cipher.byteLength);
+  buffer.set(iv, 0);
+  buffer.set(new Uint8Array(cipher), iv.byteLength);
+  return btoa(String.fromCharCode.apply(null, buffer));
+}
+async function decryptText(data) {
+  try {
+    const raw = atob(data);
+    const buffer = new Uint8Array(raw.length);
+    for (let i = 0; i < raw.length; i++) buffer[i] = raw.charCodeAt(i);
+    const iv = buffer.slice(0, 12);
+    const cipher = buffer.slice(12);
+    const key = await deriveKey();
+    const plain = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, cipher);
+    const dec = new TextDecoder();
+    return dec.decode(plain);
+  } catch (e) {
+    return '';
+  }
+}
 import { useRouter } from 'next/navigation';
 import styles from './login.module.css';
 
@@ -42,6 +111,18 @@ export default function Login() {
       navigator.serviceWorker.ready.then(fetchVersion);
       navigator.serviceWorker.addEventListener('controllerchange', fetchVersion);
     }
+
+    // leggi cookie credenziali
+    const stored = getCookie('creds');
+    if (stored) {
+      // rinnova scadenza
+      setCookie('creds', stored, 30);
+      decryptText(stored).then(str => {
+        const [u, p] = str.split('||');
+        if (u) setEmail(u);
+        if (p) setPassword(p);
+      });
+    }
   }, []);
 
   const handleSubmit = async (e) => {
@@ -63,7 +144,11 @@ export default function Login() {
       if (data.success) {
         // Salva token utente (uid)
         if (typeof window !== 'undefined') {
-          localStorage.setItem('user_token', data.user.uid);
+          sessionStorage.setItem('user_token', data.user.uid);
+          // salva credenziali criptate in cookie
+          encryptText(email + '||' + password).then(enc => {
+            setCookie('creds', enc, 30);
+          });
         }
           router.push('/default'); // Reindirizza alla pagina default
       } else {
