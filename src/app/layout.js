@@ -18,7 +18,27 @@ export default function RootLayout({ children }) {
             __html: `
               if ('serviceWorker' in navigator) {
                 window.addEventListener('load', function() {
-                  navigator.serviceWorker.register('/service-worker.js');
+                  navigator.serviceWorker.register('/service-worker.js').then(reg => {
+                    // se c'e' un worker in attesa, chiediamo di attivare subito
+                    if (reg.waiting) {
+                      reg.waiting.postMessage({type: 'SKIP_WAITING'});
+                    }
+
+                    reg.addEventListener('updatefound', () => {
+                      const newWorker = reg.installing;
+                      newWorker.addEventListener('statechange', () => {
+                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                          // nuova versione pronta: ricarica la pagina
+                          window.location.reload();
+                        }
+                      });
+                    });
+                  });
+                });
+
+                // ricarica automatica quando il controller cambia
+                navigator.serviceWorker.addEventListener('controllerchange', () => {
+                  window.location.reload();
                 });
               }
               // Reload for PWA standalone mode
