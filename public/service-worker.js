@@ -38,13 +38,13 @@ self.addEventListener('activate', event => {
     })
   );
   clients.claim();
+});
 
 // gestore messaggi dal client per skipWaiting
 self.addEventListener('message', event => {
   if (event.data && event.data.type === 'SKIP_WAITING') {
     self.skipWaiting();
   }
-});
 });
 
 // Rete-primario: forziamo il reload dalla rete e aggiorniamo la cache.
@@ -80,9 +80,9 @@ self.addEventListener('fetch', event => {
     try {
       const networkResponse = await fetch(event.request, { cache: 'reload' });
       if (networkResponse && networkResponse.status === 200) {
-        // solo cache richieste http/https per evitare errori con schemi come
-        // chrome-extension:// o dati interni
-        if (/^https?:/.test(event.request.url)) {
+        // solo cache richieste http/https e di tipo GET, per evitare errori
+        // con schemi non supportati o metodi come POST/PUT
+        if (event.request.method === 'GET' && /^https?:/.test(event.request.url)) {
           cache.put(event.request, networkResponse.clone());
         }
       }
