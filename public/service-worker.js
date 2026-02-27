@@ -1,7 +1,8 @@
 // Increment this version whenever you deploy a new release so that
 // the old HTML/css/js files are purged and clients fetch the fresh copy.
 // versione cache incrementata per forzare aggiornamento su deploy
-const CACHE_NAME = 'listaspesa-v3';
+// versione cache incrementata ad ogni deploy per forzare aggiornamento
+const CACHE_NAME = 'listaspesa-v4';
 const urlsToCache = [
   '/',
   '/manifest.json',
@@ -35,6 +36,13 @@ self.addEventListener('activate', event => {
     })
   );
   clients.claim();
+
+// gestore messaggi dal client per skipWaiting
+self.addEventListener('message', event => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+});
 });
 
 // Rete-primario: forziamo il reload dalla rete e aggiorniamo la cache.
@@ -42,34 +50,36 @@ self.addEventListener('activate', event => {
 // dalla rete perché altrimenti il browser potrebbe rispondere con un 304 e
 // il service worker restituire il vecchio contenuto.
 self.addEventListener('fetch', event => {
+  // per documenti di navigazione evitiamo completamente la cache del SW. in
+  // questo modo la pagina verrà sempre scaricata da rete (con `no-store`)
+  // e non saranno conservate versioni "vecchie" dal service worker.
+  if (event.request.mode === 'navigate') {
+    event.respondWith((async () => {
+      try {
+        return await fetch(event.request, { cache: 'no-store' });
+      } catch (e) {
+        const cache = await caches.open(CACHE_NAME);
+        const cachedResponse = await cache.match(event.request);
+        if (cachedResponse) return cachedResponse;
+        return new Response('Offline e nessuna cache', {
+          status: 503,
+          statusText: 'Service Unavailable',
+          headers: { 'Content-Type': 'text/plain' }
+        });
+      }
+    })());
+    return;
+  }
+
   event.respondWith((async () => {
     const cache = await caches.open(CACHE_NAME);
     const cachedResponse = await cache.match(event.request);
 
-    // navigazioni (richieste HTML) devono sempre tornare dalla rete, ma
-    // se riceviamo un 304 lo interpretiamo come "nessun contenuto nuovo" e
-    // restituiamo la copia cache.
-    const isNavigation = event.request.mode === 'navigate';
-
     try {
-      const networkOptions = isNavigation ? { cache: 'no-store' } : { cache: 'reload' };
-      const networkResponse = await fetch(event.request, networkOptions);
-
+      const networkResponse = await fetch(event.request, { cache: 'reload' });
       if (networkResponse && networkResponse.status === 200) {
-        // aggiorna cache SIA per html sia per altri asset
         cache.put(event.request, networkResponse.clone());
-        return networkResponse;
       }
-
-      // gestione 304 o altre risposte non-200
-      if (networkResponse && networkResponse.status === 304 && cachedResponse) {
-        // già avevamo una copia valida, restituiamola
-        return cachedResponse;
-      }
-
-      // per altre risposte (es. 500) ritorna comunque la networkResponse;
-      // se è una fetch di navigazione può contenere un body vuoto ma il
-      // browser mostrerà la pagina corretta dalla cache
       return networkResponse;
     } catch (e) {
       if (cachedResponse) {
