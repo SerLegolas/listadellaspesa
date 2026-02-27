@@ -11,6 +11,7 @@ export default function Login() {
   const [showCodePanel, setShowCodePanel] = useState(false);
   const [code, setCode] = useState('');
   const [codeError, setCodeError] = useState('');
+  const [swVersion, setSwVersion] = useState('');
 
   // Focus automatico sul primo box quando si apre il modal
   useEffect(() => {
@@ -21,6 +22,27 @@ export default function Login() {
     }
   }, [showCodePanel]);
   const router = useRouter();
+
+  // recupera versione service worker se presente
+  useEffect(() => {
+    async function fetchVersion() {
+      if ('caches' in window) {
+        try {
+          const keys = await caches.keys();
+          if (keys && keys.length) {
+            setSwVersion(keys[keys.length - 1]);
+          }
+        } catch (e) {
+          // ignore
+        }
+      }
+    }
+    fetchVersion();
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.ready.then(fetchVersion);
+      navigator.serviceWorker.addEventListener('controllerchange', fetchVersion);
+    }
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -82,6 +104,11 @@ export default function Login() {
         <div style={{ marginTop: 12, textAlign: 'center', fontSize: 14 }}>
           Non hai un account? <a href="#" style={{ color: '#0070f3', textDecoration: 'underline' }} onClick={e => { e.preventDefault(); setShowCodePanel(true); }}>Registrati</a>
         </div>
+        {swVersion && (
+          <div style={{ marginTop: 16, textAlign: 'center', fontSize: 12, color: '#888' }}>
+            SW cache: {swVersion}
+          </div>
+        )}
       </form>
       {showCodePanel && (
         <div style={{
