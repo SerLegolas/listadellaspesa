@@ -1,5 +1,10 @@
 "use client";
 import React, { useState } from 'react';
+
+// helper cookie
+function eraseCookie(name) {
+  document.cookie = name + "=; Max-Age=0; path=/";
+}
 import { useRouter } from 'next/navigation';
 import styles from './register.module.css';
 
@@ -35,6 +40,8 @@ export default function Register() {
       const data = await res.json();
       setLoading(false);
       if (data.success) {
+        // nuovo account creato, elimina eventuale cookie credenziale
+        eraseCookie('creds');
         setLoading(true);
         setTimeout(() => {
           setLoading(false);
