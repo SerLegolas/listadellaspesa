@@ -4,6 +4,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { icons } from "../icons";
 import QRModal from "../QRModal";
 import React, { useEffect, useState } from "react";
+import { useRouter } from 'next/navigation';
 
 
 export default function DefaultPage() {
@@ -13,24 +14,72 @@ export default function DefaultPage() {
   const [nuovoProdotto, setNuovoProdotto] = useState("");
   const [showAlert, setShowAlert] = useState(false);
   const [showQR, setShowQR] = useState(false);
+  const [showDownload, setShowDownload] = useState(false);
+
+  const router = useRouter();
 
   useEffect(() => {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('user_token') : null;
-    if (!token) return;
-    setLoading(true);
-    setTimeout(() => {
-      fetch(`/api/prodotti?uid=${token}`)
-        .then(res => res.json())
-        .then(data => {
-          setProdotti(data.prodotti || []);
-          setLoading(false);
-        })
-        .catch(() => setLoading(false));
-    }, 2000);
+    let token = sessionStorage.getItem('user_token');
+    async function fetchProdotti(uid) {
+      setLoading(true);
+      try {
+        const res = await fetch(`/api/prodotti?uid=${uid}`);
+        const data = await res.json();
+        setProdotti(data.prodotti || []);
+      } catch {
+        // ignore
+      }
+      setLoading(false);
+    }
+
+    async function tryAutoLogin() {
+      // cerca cookie con credenziali
+      const stored = document.cookie.split(';').map(c => c.trim()).find(c => c.startsWith('creds='));
+      if (stored) {
+        const enc = stored.split('=')[1];
+        try {
+          const dec = await decryptText(enc);
+          const [u, p] = dec.split('||');
+          if (u && p) {
+            // esegui login API
+            const res = await fetch('/api/login', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ username: u, password: p })
+            });
+            const data = await res.json();
+            if (data.success) {
+              sessionStorage.setItem('user_token', data.user.uid);
+              return data.user.uid;
+            }
+          }
+        } catch (e) {
+          // ignore
+        }
+      }
+      return null;
+    }
+
+    (async () => {
+      if (!token) {
+        // prova a fare auto-login
+        token = await tryAutoLogin();
+      }
+      if (!token) {
+        router.push('/login');
+        return;
+      }
+      await fetchProdotti(token);
+    })();
+
+    // determiniamo se mostrare download (client-only)
+    if (!window.matchMedia('(display-mode: standalone)').matches) {
+      setShowDownload(true);
+    }
   }, []);
 
   const handleCheck = async (id, checked) => {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('user_token') : null;
+    const token = typeof window !== 'undefined' ? sessionStorage.getItem('user_token') : null;
     if (!token) return;
     await fetch('/api/prodotti', {
       method: 'PUT',
@@ -51,16 +100,19 @@ export default function DefaultPage() {
             <span className={styles.logo}>Lista Spesa</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
-            {typeof window !== 'undefined' && !window.matchMedia('(display-mode: standalone)').matches && (
-              <FontAwesomeIcon icon={icons.download} title="Download" style={{ cursor: 'pointer' }} onClick={() => setShowQR(true)} />
-            )}
+            <FontAwesomeIcon
+              icon={icons.download}
+              title="Download"
+              style={{ cursor: 'pointer', display: showDownload ? 'inline-block' : 'none' }}
+              onClick={() => setShowQR(true)}
+            />
             <FontAwesomeIcon
               icon={icons.logout}
               title="Logout"
               style={{ cursor: 'pointer' }}
               onClick={() => {
                 if (typeof window !== 'undefined') {
-                  localStorage.removeItem('user_token');
+                  sessionStorage.removeItem('user_token');
                   window.location.href = '/login';
                 }
               }}
@@ -82,7 +134,7 @@ export default function DefaultPage() {
               setTimeout(() => setShowAlert(false), 3000);
               return;
             }
-            const token = typeof window !== 'undefined' ? localStorage.getItem('user_token') : null;
+            const token = typeof window !== 'undefined' ? sessionStorage.getItem('user_token') : null;
             if (!token) return;
             setLoading(true);
             await fetch('/api/prodotti', {
@@ -168,7 +220,7 @@ export default function DefaultPage() {
                         style={{ color: '#d32f2f', cursor: 'pointer', marginLeft: 12, width: 14, height: 14 }}
                         title="Elimina"
                         onClick={async () => {
-                          const token = typeof window !== 'undefined' ? localStorage.getItem('user_token') : null;
+                          const token = typeof window !== 'undefined' ? sessionStorage.getItem('user_token') : null;
                           if (!token) return;
                           setLoading(true);
                           await fetch('/api/prodotti', {
@@ -206,7 +258,7 @@ export default function DefaultPage() {
                 boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
               }}
               onClick={async () => {
-                const token = typeof window !== 'undefined' ? localStorage.getItem('user_token') : null;
+                const token = typeof window !== 'undefined' ? sessionStorage.getItem('user_token') : null;
                 if (!token) return;
                 setLoading(true);
                 const checkedIds = prodotti.filter(p => p.checked === 1).map(p => p.id);
