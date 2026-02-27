@@ -1,8 +1,10 @@
 // Increment this version whenever you deploy a new release so that
 // the old HTML/css/js files are purged and clients fetch the fresh copy.
 // versione cache incrementata per forzare aggiornamento su deploy
-// versione cache incrementata ad ogni deploy per forzare aggiornamento
-const CACHE_NAME = 'listaspesa-v4';
+// il nome della cache include il timestamp di build in modo da
+// aggiornarsi automaticamente a ogni nuovo deploy/build. non serve più
+// modificare manualmente il valore prima del commit.
+const CACHE_NAME = 'listaspesa-' + new Date().toISOString().replace(/[:\.]/g, '-');
 const urlsToCache = [
   '/',
   '/manifest.json',
