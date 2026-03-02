@@ -1,6 +1,11 @@
 html, body {
-  overflow: hidden;
-  height: 100vh;
+  overflow: auto; /* allow page to scroll */
+  min-height: 100vh;
+  -webkit-overflow-scrolling: touch; /* smooth scrolling on iOS */
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
 }
 /* Impostazione globale del font Outfit */
 body {
@@ -21,3 +26,18 @@ body {
   z-index: 10000;
   opacity: 0.9;
 }
+
+/* global footer for mobile and desktop pages */
+.appFooter {
+  height: 30px;
+  background-color: orange; /* same as navbar */
+  color: #fff;
+  font-style: italic;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative; /* flow with content */
+  width: 100%;
+}
+
