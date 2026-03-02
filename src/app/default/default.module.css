@@ -131,10 +131,10 @@
   display: flex;
   flex-direction: column;
   /* padding ensures space when footer is not fixed */
-  padding: 20px;
+  padding: 20px 20px 60px; /* leave space for footer at bottom */
   margin-top: 52px;
   min-height: 0; /* allow child content to shrink inside flex container */
-  overflow: auto; /* enable vertical scrolling when content overflows */
+  overflow: visible; /* let body handle scrolling */
 }
 
 /* ensure space at bottom on small screens so last card is reachable */
