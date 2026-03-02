@@ -111,7 +111,7 @@
   padding: 10px;
   margin: 0;
   border: none;
-  position: absolute;
+  position: fixed; /* stay at top while scrolling */
   top: 0;
   left: 0;
   right: 0;
@@ -130,6 +130,7 @@
   flex: 1;
   display: flex;
   flex-direction: column;
+  /* padding ensures space when footer is not fixed */
   padding: 20px;
   margin-top: 52px;
   min-height: 0; /* allow child content to shrink inside flex container */
@@ -140,7 +141,7 @@
 @media (max-width: 768px) {
   .corpo {
     /* maggiore spazio per scrollare fino al fondo */
-    padding-bottom: 70px;
+    padding-bottom: 120px;
   }
 }
 
