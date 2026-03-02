@@ -136,6 +136,13 @@
   overflow: auto; /* enable vertical scrolling when content overflows */
 }
 
+/* ensure space at bottom on small screens so last card is reachable */
+@media (max-width: 768px) {
+  .corpo {
+    padding-bottom: 30px;
+  }
+}
+
 /* INPUT + BUTTON */
 .form-container {
   display: flex;
