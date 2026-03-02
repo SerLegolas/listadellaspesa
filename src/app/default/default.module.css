@@ -88,7 +88,8 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  overflow: visible;
+  /* make the root container scrollable so children can move under navbar */
+  overflow-y: auto;
 }
 
 /* Page title that stays visible while scrolling */
@@ -135,6 +136,8 @@
   padding: 20px 20px 60px; /* leave space for footer at bottom */
   margin-top: 52px;
   min-height: 0; /* allow child content to shrink inside flex container */
+  /* let content scroll within the body/main container beneath the fixed navbar */
+  overflow-y: auto;
 }
 
 /* ensure space at bottom on small screens so last card is reachable */
