@@ -30,36 +30,17 @@
     font-size: 14px;
   }
 }
-@media (max-width: 600px) {
-  .form-container {
-    flex-direction: column;
-    gap: 8px;
-    align-items: stretch;
-  }
-  .form-container input,
-  .form-container button {
-    width: 100%;
-    max-width: 100%;
-    box-sizing: border-box;
-    margin: 0;
-    padding-left: 0;
-    padding-right: 0;
-  }
-  .tabella_table {
-    width: 100%;
-    table-layout: fixed;
-  }
-  .tabella_td {
-    padding: 6px;
-    font-size: 14px;
-    word-break: break-word;
-  }
-  .tabella {
-    max-height: 180px;
-    font-size: 14px;
-  }
+
+/* between 400px and 860px we already have a rule below */
+
+/* special breakpoint for medium phones / small tablets */
+@media (min-width: 400px) and (max-width: 860px) {
+  /* adjust padding to give more breathing room */
   .corpo {
-    padding: 8px;
+    padding: 12px;
+  }
+  .pageTitle {
+    font-size: 20px;
   }
 }
 /* SPINNER */
@@ -88,8 +69,10 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  /* make the root container scrollable so children can move under navbar */
-  overflow-y: auto;
+  /* push body content below the fixed navbar */
+  padding-top: 60px;
+  /* let the browser/body handle scrolling (important for PWA) */
+  overflow: visible;
 }
 
 /* Page title that stays visible while scrolling */
@@ -134,10 +117,10 @@
   flex-direction: column;
   /* padding ensures space when footer is not fixed */
   padding: 20px 20px 60px; /* leave space for footer at bottom */
-  margin-top: 52px;
+  /* margin-top moved to .main padding so this element can grow naturally */
   min-height: 0; /* allow child content to shrink inside flex container */
-  /* let content scroll within the body/main container beneath the fixed navbar */
-  overflow-y: auto;
+  /* no internal scrolling; body element scrolls in PWA */
+  overflow: visible;
 }
 
 /* ensure space at bottom on small screens so last card is reachable */

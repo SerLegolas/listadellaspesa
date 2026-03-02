@@ -118,6 +118,13 @@
   }
 }
 
+/* intermediate range between small phones and larger tablets */
+@media (min-width: 400px) and (max-width: 860px) {
+  .card {
+    width: calc(33% - 16px);
+  }
+}
+
 @media (max-width: 480px) {
   .card {
     width: 100%;
