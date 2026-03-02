@@ -139,7 +139,8 @@
 /* ensure space at bottom on small screens so last card is reachable */
 @media (max-width: 768px) {
   .corpo {
-    padding-bottom: 30px;
+    /* maggiore spazio per scrollare fino al fondo */
+    padding-bottom: 70px;
   }
 }
 
