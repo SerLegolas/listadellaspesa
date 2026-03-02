@@ -208,7 +208,7 @@ export default function Login() {
           justifyContent: 'center',
           zIndex: 2000
         }}>
-          <div style={{ background: '#eee', padding: 32, borderRadius: 8, boxShadow: '0 2px 8px rgba(0,0,0,0.15)', minWidth: 280, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <div style={{ background: '#eee', padding: 24, borderRadius: 8, boxShadow: '0 2px 8px rgba(0,0,0,0.15)', minWidth: 200, maxWidth: '85vw', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <img src="/icon.svg" alt="Logo Lista Spesa" style={{ width: 56, height: 56, margin: '0 auto 12px auto', display: 'block' }} />
             <h3 style={{ marginBottom: 16, textAlign: 'center', color: '#333' }}>CODICE DI REGISTRAZIONE</h3>
             <div style={{ display: 'flex', gap: 8, justifyContent: 'center', marginBottom: 12 }}>

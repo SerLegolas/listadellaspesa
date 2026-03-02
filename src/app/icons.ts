@@ -2,7 +2,7 @@
 // Aggiungi qui le icone che vuoi utilizzare, importandole da @fortawesome/free-solid-svg-icons
 // Esempio: import { faDatabase } from '@fortawesome/free-solid-svg-icons;
 
-import { faDatabase, faTable, faCog, faCheck, faTimes, faDownload, faEye, faSave, faTrash, faSearch, faLock, faLockOpen, faKey } from '@fortawesome/free-solid-svg-icons';
+import { faDatabase, faTable, faCog, faCheck, faTimes, faDownload, faEye, faSave, faTrash, faSearch, faLock, faLockOpen, faKey, faHome, faLink } from '@fortawesome/free-solid-svg-icons';
 import { faSignOutAlt } from '@fortawesome/free-solid-svg-icons';
 
 export const icons = {
@@ -20,5 +20,7 @@ export const icons = {
   lockOpen: faLockOpen,
   key: faKey,
   logout: faSignOutAlt,
+  home: faHome,
+  link: faLink,
   // Aggiungi altre icone qui come necessario
 };

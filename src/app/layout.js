@@ -5,6 +5,10 @@ export const metadata = {
 
 import './globals.css';
 
+// ClientLayout is a client component wrapper that adds SWVersion
+import ClientLayout from './ClientLayout';
+import { NotificationProvider } from './notification/NotificationProvider';
+
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
@@ -53,7 +57,13 @@ export default function RootLayout({ children }) {
           }}
         />
       </head>
-      <body>{children}</body>
+      <body>
+        <ClientLayout>
+          <NotificationProvider>
+            {children}
+          </NotificationProvider>
+        </ClientLayout>
+      </body>
     </html>
   );
 }

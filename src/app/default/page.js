@@ -5,6 +5,7 @@ import { icons } from "../icons";
 import QRModal from "../QRModal";
 import React, { useEffect, useState } from "react";
 import { useRouter } from 'next/navigation';
+import { useNotification } from '../notification/NotificationProvider';
 
 
 export default function DefaultPage() {
@@ -15,6 +16,8 @@ export default function DefaultPage() {
   const [showAlert, setShowAlert] = useState(false);
   const [showQR, setShowQR] = useState(false);
   const [showDownload, setShowDownload] = useState(false);
+  const [selectAll, setSelectAll] = useState(false);
+  const notify = useNotification();
 
   const router = useRouter();
 
@@ -88,7 +91,36 @@ export default function DefaultPage() {
     });
     fetch(`/api/prodotti?uid=${token}`)
       .then(res => res.json())
-      .then(data => setProdotti(data.prodotti || []));
+      .then(data => {
+        const list = data.prodotti || [];
+        setProdotti(list);
+        // update selectAll state based on returned data
+        setSelectAll(list.length > 0 && list.every(p => p.checked === 1));
+      });
+  };
+
+  const handleSelectAll = async (checked) => {
+    const token = typeof window !== 'undefined' ? sessionStorage.getItem('user_token') : null;
+    if (!token) return;
+    setLoading(true);
+    // send update for each product
+    await Promise.all(
+      prodotti.map(p =>
+        fetch('/api/prodotti', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ uid: token, id: p.id, checked: checked ? 1 : 0 })
+        })
+      )
+    );
+    // refresh list
+    fetch(`/api/prodotti?uid=${token}`)
+      .then(res => res.json())
+      .then(data => setProdotti(data.prodotti || []))
+      .finally(() => {
+        setLoading(false);
+        setSelectAll(checked);
+      });
   };
 
   return (
@@ -107,6 +139,16 @@ export default function DefaultPage() {
               onClick={() => setShowQR(true)}
             />
             <FontAwesomeIcon
+              icon={icons.table}
+              title="Elenco ricette"
+              style={{ cursor: 'pointer' }}
+              onClick={() => {
+                if (typeof window !== 'undefined') {
+                  window.location.href = '/elenco-ricette';
+                }
+              }}
+            />
+            <FontAwesomeIcon
               icon={icons.logout}
               title="Logout"
               style={{ cursor: 'pointer' }}
@@ -121,8 +163,8 @@ export default function DefaultPage() {
         </div>
       </nav>
       <div className={styles.corpo}>
-        <div style={{ textAlign: 'center', fontWeight: 700, fontSize: 24, marginBottom: 24 }}>
-          La tua lista della spesa
+        <div className="pageTitle">
+          Inserisci nuovo prodotto
         </div>
         <form
           className={styles['form-container']}
@@ -142,6 +184,7 @@ export default function DefaultPage() {
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ uid: token, nome })
             });
+            notify('Aggiunto prodotto nella lista');
             setNuovoProdotto("");
             setTimeout(() => {
               fetch(`/api/prodotti?uid=${token}`)
@@ -190,58 +233,104 @@ export default function DefaultPage() {
             </div>
           </div>
         )}
-        {loading ? (
+        {/* heading above product list */}
+        <div style={{ textAlign: 'center', fontWeight: 700, fontSize: 'inherit', margin: '12px 0', color: '#888', textTransform: 'uppercase' }}>
+          La tua lista della spesa
+        </div>
+        {loading && (
           <div className={styles.tabella} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 120 }}>
             <span className={styles.spinner}></span>
           </div>
-        ) : prodotti.length === 0 ? (
-          <div style={{ color: '#d32f2f', textAlign: 'center', fontWeight: 600, fontSize: 18, margin: '40px 0' }}>
-            Nessun prodotto da comprare
+        )}
+        {!loading && prodotti.length === 0 && (
+          <div style={{ textAlign: 'center', color: '#d32f2f', textTransform: 'uppercase', margin: '40px 0' }}>
+            LISTA VUOTA
           </div>
-        ) : (
-          <div className={styles.tabella}>
-            <table className={styles.tabella_table}>
-              <tbody>
+        )}
+        {!loading && prodotti.length > 0 && (
+          <>
+            <div style={{ marginBottom: 8 }}>
+              <label style={{ fontSize: 14, display: 'flex', alignItems: 'center', gap: 4 }}>
+                <input
+                  type="checkbox"
+                  checked={selectAll}
+                  onChange={e => handleSelectAll(e.target.checked)}
+                />
+                Selezione tutti
+              </label>
+            </div>
+            <div className={styles.tabella}>
+              <table className={styles.tabella_table}>
+                <tbody>
                 {prodotti.map(prod => (
-                  <tr key={prod.id}>
-                    <td className={styles.tabella_td} style={{ textAlign: 'center', width: 36 }}>
-                      <input
-                        type="checkbox"
-                        checked={prod.checked === 1}
-                        onChange={e => handleCheck(prod.id, e.target.checked)}
-                      />
-                    </td>
-                    <td className={styles.tabella_td} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <span style={prod.checked === 1 ? { textDecoration: 'line-through', color: '#888' } : {}}>
-                        {prod.nome}
-                      </span>
-                      <FontAwesomeIcon
-                        icon={icons.trash}
-                        style={{ color: '#d32f2f', cursor: 'pointer', marginLeft: 12, width: 14, height: 14 }}
-                        title="Elimina"
-                        onClick={async () => {
-                          const token = typeof window !== 'undefined' ? sessionStorage.getItem('user_token') : null;
-                          if (!token) return;
-                          setLoading(true);
-                          await fetch('/api/prodotti', {
-                            method: 'DELETE',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ uid: token, id: prod.id })
-                          });
-                          setTimeout(() => {
-                            fetch(`/api/prodotti?uid=${token}`)
-                              .then(res => res.json())
-                              .then(data => setProdotti(data.prodotti || []))
-                              .finally(() => setLoading(false));
-                          }, 2000);
-                        }}
-                      />
+                  <tr key={prod.id} className={prod.checked === 1 ? styles.checkedRow : ''}>
+                    <td className={styles.tabella_td}>
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-start", width: '100%' }}>
+                        <input
+                          type="checkbox"
+                          checked={prod.checked === 1}
+                          onChange={e => handleCheck(prod.id, e.target.checked)}
+                          style={{ marginRight: 12 }}
+                        />
+                        <span
+                          style={
+                            prod.checked === 1
+                              ? { textDecoration: "line-through", color: "#888" }
+                              : {}
+                          }
+                        >
+                          {(() => {
+                            const parts = prod.nome.split('|||');
+                            const base = parts[0] || '';
+                            const source = parts[1] || '';
+                            return (
+                              <>
+                                {base}
+                                {source && (
+                                  <div style={{ fontSize: '0.8em', fontStyle: 'italic', color: '#555' }}>
+                                    {source}
+                                  </div>
+                                )}
+                              </>
+                            );
+                          })()}
+                        </span>
+                        <FontAwesomeIcon
+                          icon={icons.trash}
+                          style={{
+                            color: '#d32f2f',
+                            cursor: 'pointer',
+                            marginLeft: 'auto',
+                            width: 14,
+                            height: 14
+                          }}
+                          title="Elimina"
+                          onClick={async () => {
+                            const token = typeof window !== 'undefined' ? sessionStorage.getItem('user_token') : null;
+                            if (!token) return;
+                            setLoading(true);
+                            await fetch('/api/prodotti', {
+                              method: 'DELETE',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({ uid: token, id: prod.id })
+                            });
+                            notify('Prodotto eliminato');
+                            setTimeout(() => {
+                              fetch(`/api/prodotti?uid=${token}`)
+                                .then(res => res.json())
+                                .then(data => setProdotti(data.prodotti || []))
+                                .finally(() => setLoading(false));
+                            }, 2000);
+                          }}
+                        />
+                      </div>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
+          </>
         )}
         {prodotti.some(p => p.checked === 1) && (
           <div style={{ display: 'flex', justifyContent: 'center', marginTop: 24 }}>

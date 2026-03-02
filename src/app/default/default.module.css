@@ -90,6 +90,19 @@
   flex-direction: column;
 }
 
+/* Page title that stays visible while scrolling */
+.pageTitle {
+  position: sticky;
+  top: 60px; /* leave space for navbar */
+  background: #fff;
+  z-index: 5;
+  padding: 8px 0;
+  text-align: center;
+  font-weight: 700;
+  font-size: 24px;
+  margin-bottom: 24px;
+}
+
 /* NAVBAR */
 .navbar {
   width: 100%;
@@ -119,6 +132,8 @@
   flex-direction: column;
   padding: 20px;
   margin-top: 52px;
+  min-height: 0; /* allow child content to shrink inside flex container */
+  overflow: auto; /* enable vertical scrolling when content overflows */
 }
 
 /* INPUT + BUTTON */
@@ -237,6 +252,22 @@
   flex: 1;
   overflow-y: auto;
   border: 1px solid #ccc;
+}
+
+/* single-column table layout adjustments */
+.tabella_td > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.tabella_td input[type="checkbox"] {
+  margin-right: 12px;
+}
+
+/* row checked styling */
+tr.checkedRow {
+  background-color: #f0f0f0;
 }
 
 
